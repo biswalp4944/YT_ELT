@@ -1,5 +1,5 @@
-from  airflow.providers.postgres.hooks.postgres import PostgresHook
-from pyscope2.extras import RealDictCursor
+from  airflow.providers.postgres.hooks.postgres import PostgresHook # type: ignore
+from psycopg2.extras import RealDictCursor # type: ignore
 table="yt_api"
 def get_conn_cursor():
     hook = PostgresHook(postgres_conn_id="postgres_db_yt_elt", database="elt_db")
@@ -14,7 +14,7 @@ def close_conn_cursor(conn, cursor):
 def create_schema(schema):
     conn, cursor = get_conn_cursor()
     cursor.execute(f"CREATE SCHEMA IF NOT EXISTS {schema}")
-    cursor.execute(schema_sql)
+    #cursor.execute(schema_sql) # type: ignore
     conn.commit()
     close_conn_cursor(conn, cursor)
 
@@ -24,12 +24,13 @@ def create_table(schema, table):
         table_sql = f"""
             CREATE TABLE IF NOT EXISTS {schema}.{table} (
                 "video_id" VARCHAR(11) PRIMARY KEY NOT NULL,
-                "video_title" TEXT NOT NULL,
-                "Upload_date" TIMESTAMP NOT NULL,
-                "Duration" VARCHAR(20) NOT NULL,
-                "Video_views" INT,
-                "Video_likes" INT,
-                "Video_comments" INT,
+                "title" TEXT NOT NULL,
+                "published_at" TIMESTAMP NOT NULL,
+                "duration" VARCHAR(20) NOT NULL,
+                "view_count" INT,
+                "like_count" INT,
+                "comment_count" INT,
+                "video_type" VARCHAR(20) DEFAULT 'NA' NOT NULL
 
             )
         """
@@ -37,12 +38,13 @@ def create_table(schema, table):
         table_sql = f"""
             CREATE TABLE IF NOT EXISTS {schema}.{table} (
                 "video_id" VARCHAR(11) PRIMARY KEY NOT NULL,
-                "video_title" TEXT NOT NULL,
-                "Upload_date" TIMESTAMP NOT NULL,
-                "Duration" VARCHAR(20) NOT NULL,
-                "Video_views" INT,
-                "Video_likes" INT,
-                "Video_comments" INT,
+                "title" TEXT NOT NULL,
+                "published_at" TIMESTAMP NOT NULL,
+                "duration" VARCHAR(20) NOT NULL,
+                "view_count" INT,
+                "like_count" INT,
+                "comment_count" INT,
+                "video_type" VARCHAR(20) NOT NULL
             
             )
         """

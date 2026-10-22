@@ -9,14 +9,14 @@ def insert_data(cursor, conn, row, schema):
              video_id='video_id'
 
              cursor.execute(
-                f"""INSERT INTO {schema}.{table} (video_id, video_title, Upload_date, Duration, Video_views, Video_likes, Video_comments)
-                VALUES (%(video_id)s, %(video_title)s, %(Upload_date)s, %(Duration)s, %(Video_views)s, %(Video_likes)s, %(Video_comments)s)""", row)
+                f"""INSERT INTO {schema}.{table} (video_id, title, published_at, duration, view_count, like_count, comment_count)
+                VALUES (%(video_id)s, %(title)s, %(published_at)s, %(duration)s, %(view_count)s, %(like_count)s, %(comment_count)s)""", row)
         else:
             video_id='video_id'
 
             cursor.execute(
-                  f"""INSERT INTO {schema}.{table} (video_id, video_title, Upload_date, Duration,Video_Type, Video_views, Video_likes, Video_comments)
-                    VALUES (%(video_id)s, %(video_title)s, %(Upload_date)s, %(Duration)s, %(Video_Type)s, %(Video_views)s, %(Video_likes)s, %(Video_comments)s)""", row)
+                  f"""INSERT INTO {schema}.{table} (video_id, title, published_at, duration, video_type, view_count, like_count, comment_count)
+                    VALUES (%(video_id)s, %(title)s, %(published_at)s, %(duration)s, %(video_type)s, %(view_count)s, %(like_count)s, %(comment_count)s)""", row)
         conn.commit()
         logger.info(f"Inserted data for video_id: {row['video_id']}")
     except Exception as e:
@@ -26,16 +26,16 @@ def update_row(cursor, conn, row, schema):
     try:
         if schema == 'staging':
             cursor.execute(
-                f"""UPDATE {schema}.{table} SET video_title=%(video_title)s, Upload_date=%(Upload_date)s, Duration=%(Duration)s, Video_views=%(Video_views)s, Video_likes=%(Video_likes)s, Video_comments=%(Video_comments)s WHERE video_id=%(video_id)s""", row)
+                f"""UPDATE {schema}.{table} SET title=%(title)s, published_at=%(published_at)s, duration=%(duration)s, view_count=%(view_count)s, like_count=%(like_count)s, comment_count=%(comment_count)s WHERE video_id=%(video_id)s""", row)
         else:
             cursor.execute(
-                f"""UPDATE {schema}.{table} SET video_title=%(video_title)s, Upload_date=%(Upload_date)s, Duration=%(Duration)s, Video_Type=%(Video_Type)s, Video_views=%(Video_views)s, Video_likes=%(Video_likes)s, Video_comments=%(Video_comments)s WHERE video_id=%(video_id)s""", row)
+                f"""UPDATE {schema}.{table} SET title=%(title)s, published_at=%(published_at)s, duration=%(duration)s, video_type=%(video_type)s, view_count=%(view_count)s, like_count=%(like_count)s, comment_count=%(comment_count)s WHERE video_id=%(video_id)s""", row)
         conn.commit()
         logger.info(f"Updated data for video_id: {row['video_id']}")
     except Exception as e:
         logger.error(f"Error updating data for video_id: {row['video_id']}")
         raise e
-    def delete_row(cursor, conn, ids_to_delete, schema):
+def delete_row(cursor, conn, ids_to_delete, schema):
         try:
             ids_to_delete=f"""{','.join([f"'{id}'" for id in ids_to_delete])}"""
             cursor.execute(f"""DELETE FROM {schema}.{table} WHERE video_id IN ({ids_to_delete})""")

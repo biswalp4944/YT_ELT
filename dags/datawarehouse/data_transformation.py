@@ -1,8 +1,8 @@
 from datetime import timedelta, datetime
+from isodate import parse_duration as parse_iso_duration # type: ignore
 
 def parse_duration(duration_str):
-
-    duration_str = duration_str.replace('T', '')
+    return parse_iso_duration(duration_str)
 
     components = ['D', 'H', 'M', 'S']
     values= {'D': 0, 'H': 0, 'M': 0, 'S': 0}
@@ -18,7 +18,7 @@ def parse_duration(duration_str):
     return total_duration
 
 def transform_data(row):
-
+    row = row.copy()  # Create a copy of the row to avoid modifying the original
     duration_td= parse_duration(row['duration'])
     row['duration'] = (datetime.min + duration_td).time()
     row['video_type'] ='shorts' if duration_td.total_seconds() <= 60 else 'Normal'

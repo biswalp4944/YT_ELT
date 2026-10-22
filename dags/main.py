@@ -1,5 +1,5 @@
-from airflow import DAG
-import pendulum
+from airflow import DAG # type: ignore
+import pendulum # type: ignore
 from datetime import timedelta,datetime
 from api.video_stats import (
     get_playlist_id, 
@@ -54,4 +54,4 @@ with DAG(
     update_staging_table = staging_table()
     update_production_table = production_table()
     #define task dependencies
-    
+    update_staging_table >> update_production_table
