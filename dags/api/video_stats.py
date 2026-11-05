@@ -49,16 +49,20 @@ def get_video_ids(playlist_id):
         return video_ids
     except requests.exceptions.RequestException as e:
         raise e
-@task
-def extract_video_data(video_id):
-    extracted_data =[]
 
-    def batch_list(Video_id_list,batch_size):
-        for video_id in range(0, len(Video_id_list), batch_size):
-            yield Video_id_list[video_id:video_id + batch_size]
+@task
+def batch_list(video_ids, batch_size=maxResults):
+    return [
+        video_ids[start:start + batch_size]
+        for start in range(0, len(video_ids), batch_size)
+    ]
+
+@task
+def extract_video_data(video_id_batches):
+    extracted_data =[]
     
     try:
-        for batch in batch_list(video_id, maxResults):
+        for batch in video_id_batches:
             video_ids_str=",".join(batch)
             url=f"https://youtube.googleapis.com/youtube/v3/videos?part=contentDetails&part=snippet&part=statistics&id={video_ids_str}&key={API_KEY}"
             response = requests.get(url)

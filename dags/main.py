@@ -6,11 +6,12 @@ from airflow.operators.trigger_dagrun import TriggerDagRunOperator
 from api.video_stats import (
     get_playlist_id,
     get_video_ids,
+    batch_list,
     extract_video_data,
     save_to_json,
 )
 
-from datawarehouse.dwh import staging_table, core_table
+from datawarehouse.dwh import staging_table, production_table
 from dataquality.soda import yt_elt_data_quality
 
 # Define the local timezone
@@ -47,7 +48,8 @@ with DAG(
     # Define tasks
     playlist_id = get_playlist_id()
     video_ids = get_video_ids(playlist_id)
-    extract_data = extract_video_data(video_ids)
+    video_id_batches = batch_list(video_ids)
+    extract_data = extract_video_data(video_id_batches)
     save_to_json_task = save_to_json(extract_data)
 
     trigger_update_db = TriggerDagRunOperator(
@@ -56,7 +58,7 @@ with DAG(
     )
 
     # Define dependencies
-    playlist_id >> video_ids >> extract_data >> save_to_json_task >> trigger_update_db
+    playlist_id >> video_ids >> video_id_batches >> extract_data >> save_to_json_task >> trigger_update_db
 
 # DAG 2: update_db
 with DAG(
@@ -69,7 +71,7 @@ with DAG(
 
     # Define tasks
     update_staging = staging_table()
-    update_core = core_table()
+    update_production = production_table()
 
     trigger_data_quality = TriggerDagRunOperator(
         task_id="trigger_data_quality",
@@ -77,7 +79,7 @@ with DAG(
     )
 
     # Define dependencies
-    update_staging >> update_core >> trigger_data_quality
+    update_staging >> update_production >> trigger_data_quality
 
 # DAG 3: data_quality
 with DAG(
@@ -90,7 +92,7 @@ with DAG(
 
     # Define tasks
     soda_validate_staging = yt_elt_data_quality(staging_schema)
-    soda_validate_core = yt_elt_data_quality(core_schema)
+    soda_validate_production = yt_elt_data_quality(production_schema)
 
     # Define dependencies
-    soda_validate_staging >> soda_validate_core
+    soda_validate_staging >> soda_validate_production
