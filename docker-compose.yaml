@@ -54,6 +54,7 @@ x-airflow-common:
   #   - .env
   environment:
     &airflow-common-env
+    
     # Set executor to CeleryExecutor 
     AIRFLOW__CORE__EXECUTOR: CeleryExecutor
     # Use SQLAlchemy to connect to Airflow's metadata Postgres database using the psycopg2 driver
