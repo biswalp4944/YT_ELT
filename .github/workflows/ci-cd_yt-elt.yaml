@@ -80,6 +80,32 @@ jobs:
                 dags/**
                 include/**
                 docker-compose.yaml
+        - name: Validate PostgreSQL configuration
+          if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
+          run: |
+            required_vars=(
+              POSTGRES_CONN_USERNAME
+              POSTGRES_CONN_PASSWORD
+              METADATA_DATABASE_NAME
+              METADATA_DATABASE_USERNAME
+              METADATA_DATABASE_PASSWORD
+              CELERY_BACKEND_NAME
+              CELERY_BACKEND_USERNAME
+              CELERY_BACKEND_PASSWORD
+              ELT_DATABASE_NAME
+              ELT_DATABASE_USERNAME
+              ELT_DATABASE_PASSWORD
+            )
+            missing=()
+            for name in "${required_vars[@]}"; do
+              if [[ -z "${!name}" ]]; then
+                missing+=("$name")
+              fi
+            done
+            if (( ${#missing[@]} > 0 )); then
+              printf '::error::Missing required PostgreSQL Actions secrets or variables: %s\n' "${missing[*]}"
+              exit 1
+            fi
         - name: Set up Docker Compose
           if: steps.changed-files-tests.outputs.any_changed == 'true' || github.event_name == 'workflow_dispatch'
           run: docker compose up -d
